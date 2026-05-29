@@ -320,6 +320,7 @@ a { text-decoration: none; color: inherit; }
 .rating { font-size: 0.84rem; font-weight: 600; white-space: nowrap; }
 
 .row-actions { display: flex; gap: 6px; }
+.row-num { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-align: center; }
 
 /* ── Form ─────────────────────────────────────────── */
 .form-grid {

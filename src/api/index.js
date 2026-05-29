@@ -24,7 +24,10 @@ api.interceptors.response.use(
 export function imgUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${path}`;
+  // /uploads/ → served by API (Render)
+  if (path.startsWith('/uploads/')) return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${path}`;
+  // /images/ → served by user FE (Netlify)
+  return `${import.meta.env.VITE_FE_URL || 'https://magnificent-manatee-295dfb.netlify.app'}${path}`;
 }
 
 export const authApi = {

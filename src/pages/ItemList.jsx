@@ -78,6 +78,7 @@ export default function ItemList({ type }) {
               <table className="table">
                 <thead>
                   <tr>
+                    <th style={{width: '48px'}}>STT</th>
                     <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Danh mục</th>
@@ -87,8 +88,9 @@ export default function ItemList({ type }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map(item => (
+                  {items.map((item, idx) => (
                     <tr key={item.id}>
+                      <td className="row-num">{idx + 1}</td>
                       <td>
                         <img
                           className="table-thumb"
