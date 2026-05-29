@@ -74,62 +74,68 @@ export default function ItemList({ type }) {
           ) : items.length === 0 ? (
             <div className="table-empty">Không có dữ liệu</div>
           ) : (
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th style={{width: '48px'}}>STT</th>
-                    <th>Ảnh</th>
-                    <th>Tên</th>
-                    <th>Danh mục</th>
-                    <th>Giá</th>
-                    <th>Đánh giá</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, idx) => (
-                    <tr key={item.id}>
-                      <td className="row-num">{idx + 1}</td>
-                      <td>
-                        <img
-                          className="table-thumb"
-                          src={imgUrl(item.image) || FALLBACK}
-                          alt={item.name}
-                          onError={e => { e.currentTarget.src = FALLBACK; }}
-                        />
-                      </td>
-                      <td>
-                        <strong className="item-name">{item.name}</strong>
-                        <span className="item-id">{item.id}</span>
-                      </td>
-                      <td><span className="tag-chip">{item.tag}</span></td>
-                      <td className="price">{Number(item.price).toLocaleString('vi-VN')}đ</td>
-                      <td>
-                        <span className="rating">⭐ {item.rating}</span>
-                      </td>
-                      <td>
-                        <div className="row-actions">
-                          <button
-                            className="btn btn-sm btn-outline"
-                            onClick={() => navigate(`/${base}/${item.id}/edit`)}
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDelete(item)}
-                            disabled={deleting === item.id}
-                          >
-                            {deleting === item.id ? '...' : 'Xóa'}
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Desktop table */}
+              <div className="table-wrap desktop-only">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th style={{width: '48px'}}>STT</th>
+                      <th>Ảnh</th>
+                      <th>Tên</th>
+                      <th>Danh mục</th>
+                      <th>Giá</th>
+                      <th>Đánh giá</th>
+                      <th></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {items.map((item, idx) => (
+                      <tr key={item.id}>
+                        <td className="row-num">{idx + 1}</td>
+                        <td>
+                          <img className="table-thumb" src={imgUrl(item.image) || FALLBACK} alt={item.name} onError={e => { e.currentTarget.src = FALLBACK; }} />
+                        </td>
+                        <td>
+                          <strong className="item-name">{item.name}</strong>
+                          <span className="item-id">{item.id}</span>
+                        </td>
+                        <td><span className="tag-chip">{item.tag}</span></td>
+                        <td className="price">{Number(item.price).toLocaleString('vi-VN')}đ</td>
+                        <td><span className="rating">⭐ {item.rating}</span></td>
+                        <td>
+                          <div className="row-actions">
+                            <button className="btn btn-sm btn-outline" onClick={() => navigate(`/${base}/${item.id}/edit`)}>Sửa</button>
+                            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(item)} disabled={deleting === item.id}>{deleting === item.id ? '...' : 'Xóa'}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="item-cards mobile-only">
+                {items.map((item, idx) => (
+                  <div className="item-card" key={item.id}>
+                    <span className="item-card-num">{idx + 1}</span>
+                    <img className="item-card-img" src={imgUrl(item.image) || FALLBACK} alt={item.name} onError={e => { e.currentTarget.src = FALLBACK; }} />
+                    <div className="item-card-info">
+                      <strong>{item.name}</strong>
+                      <div className="item-card-meta">
+                        <span className="tag-chip">{item.tag}</span>
+                        <span className="price">{Number(item.price).toLocaleString('vi-VN')}đ</span>
+                      </div>
+                    </div>
+                    <div className="item-card-actions">
+                      <button className="btn btn-sm btn-outline" onClick={() => navigate(`/${base}/${item.id}/edit`)}>Sửa</button>
+                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(item)} disabled={deleting === item.id}>{deleting === item.id ? '...' : 'Xóa'}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
