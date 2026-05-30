@@ -51,4 +51,11 @@ export const drinksApi = {
   remove: (id)     => api.delete(`/api/drinks/${id}`),
 };
 
+export const ordersApi = {
+  getAll:  ()   => api.get('/api/orders'),
+  getUnreadCount: () => api.get('/api/orders/unread-count'),
+  markRead: (id) => api.patch(`/api/orders/${id}/read`),
+  remove:  (id) => api.delete(`/api/orders/${id}`),
+};
+
 export default api;

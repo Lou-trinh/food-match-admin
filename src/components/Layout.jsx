@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotifBell from './NotifBell';
 
 const NAV = [
   { to: '/foods',  label: 'Đồ ăn',   icon: '🍜' },
@@ -25,8 +26,11 @@ export default function Layout({ children }) {
           <span /><span /><span />
         </button>
         <span className="mobile-header-title">🍽 Food Match Admin</span>
-        <div className="sidebar-user-avatar mobile-avatar">
-          {user?.username?.[0]?.toUpperCase()}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <NotifBell />
+          <div className="sidebar-user-avatar mobile-avatar">
+            {user?.username?.[0]?.toUpperCase()}
+          </div>
         </div>
       </header>
 
@@ -61,6 +65,7 @@ export default function Layout({ children }) {
           <div className="sidebar-user">
             <span className="sidebar-user-avatar">{user?.username?.[0]?.toUpperCase()}</span>
             <span>{user?.username}</span>
+            <NotifBell />
           </div>
           <button className="sidebar-logout" onClick={handleLogout}>
             Đăng xuất
