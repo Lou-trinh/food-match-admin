@@ -11,13 +11,70 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)} ngày trước`;
 }
 
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleString('vi-VN', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
 const FALLBACK = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=60&q=60';
 
-// placement: "sidebar" | "header"
+function OrderModal({ order, onClose }) {
+  const total = order.items.reduce((s, i) => s + (i.price || 0), 0);
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="order-modal-overlay" onClick={onClose}>
+      <div className="order-modal" onClick={e => e.stopPropagation()}>
+        <div className="order-modal__header">
+          <div>
+            <h3>Chi tiết đơn hàng</h3>
+            <span className="order-modal__time">{formatDate(order.createdAt)}</span>
+          </div>
+          <button className="order-modal__close" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="order-modal__list">
+          {order.items.map((item, i) => (
+            <div className="order-modal__item" key={i}>
+              <img
+                src={imgUrl(item.image) || FALLBACK}
+                alt={item.name}
+                onError={e => { e.currentTarget.src = FALLBACK; }}
+              />
+              <div className="order-modal__item-info">
+                <strong>{item.name}</strong>
+                <span className="tag-chip">{item.tag}</span>
+              </div>
+              <span className="order-modal__item-price">
+                {Number(item.price).toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="order-modal__footer">
+          <span>Tổng cộng <strong>{order.items.length} món</strong></span>
+          <strong className="order-modal__total">
+            {total.toLocaleString('vi-VN')}đ
+          </strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NotifBell({ placement = 'sidebar' }) {
   const [open, setOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [unread, setUnread] = useState(0);
+  const [selected, setSelected] = useState(null);
   const wrapRef = useRef(null);
 
   async function fetchOrders() {
@@ -48,13 +105,16 @@ export default function NotifBell({ placement = 'sidebar' }) {
     if (!open) await fetchOrders();
   }
 
-  async function handleMarkRead(order) {
-    if (order.isRead) return;
-    try {
-      await ordersApi.markRead(order._id);
-      setOrders(prev => prev.map(o => o._id === order._id ? { ...o, isRead: true } : o));
-      setUnread(prev => Math.max(0, prev - 1));
-    } catch {}
+  async function handleSelectOrder(order) {
+    setSelected(order);
+    setOpen(false);
+    if (!order.isRead) {
+      try {
+        await ordersApi.markRead(order._id);
+        setOrders(prev => prev.map(o => o._id === order._id ? { ...o, isRead: true } : o));
+        setUnread(prev => Math.max(0, prev - 1));
+      } catch {}
+    }
   }
 
   async function handleDelete(id, e) {
@@ -70,60 +130,66 @@ export default function NotifBell({ placement = 'sidebar' }) {
   }
 
   return (
-    <div className={`notif-bell notif-bell--${placement}`} ref={wrapRef}>
-      <button className="notif-bell__btn" onClick={handleOpen} aria-label="Thông báo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        {unread > 0 && <span className="notif-bell__badge">{unread > 9 ? '9+' : unread}</span>}
-      </button>
+    <>
+      <div className={`notif-bell notif-bell--${placement}`} ref={wrapRef}>
+        <button className="notif-bell__btn" onClick={handleOpen} aria-label="Thông báo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {unread > 0 && <span className="notif-bell__badge">{unread > 9 ? '9+' : unread}</span>}
+        </button>
 
-      {open && (
-        <div className="notif-panel">
-          <div className="notif-panel__header">
-            <strong>Thông báo đơn hàng</strong>
-            {unread > 0 && <span className="notif-panel__unread">{unread} chưa đọc</span>}
-          </div>
-
-          {orders.length === 0 ? (
-            <div className="notif-panel__empty">Chưa có đơn nào</div>
-          ) : (
-            <div className="notif-panel__list">
-              {orders.map(order => (
-                <div
-                  key={order._id}
-                  className={`notif-item${order.isRead ? '' : ' is-unread'}`}
-                  onClick={() => handleMarkRead(order)}
-                >
-                  <div className="notif-item__imgs">
-                    {order.items.slice(0, 3).map((item, i) => (
-                      <img
-                        key={i}
-                        src={imgUrl(item.image) || FALLBACK}
-                        alt={item.name}
-                        onError={e => { e.currentTarget.src = FALLBACK; }}
-                      />
-                    ))}
-                    {order.items.length > 3 && (
-                      <span className="notif-item__more">+{order.items.length - 3}</span>
-                    )}
-                  </div>
-                  <div className="notif-item__body">
-                    <p className="notif-item__title">
-                      {order.items.length} món: {order.items.slice(0, 2).map(i => i.name).join(', ')}
-                      {order.items.length > 2 ? '...' : ''}
-                    </p>
-                    <span className="notif-item__time">{timeAgo(order.createdAt)}</span>
-                  </div>
-                  {!order.isRead && <span className="notif-item__dot" />}
-                  <button className="notif-item__del" onClick={e => handleDelete(order._id, e)} aria-label="Xóa">✕</button>
-                </div>
-              ))}
+        {open && (
+          <div className="notif-panel">
+            <div className="notif-panel__header">
+              <strong>Thông báo đơn hàng</strong>
+              {unread > 0 && <span className="notif-panel__unread">{unread} chưa đọc</span>}
             </div>
-          )}
-        </div>
+
+            {orders.length === 0 ? (
+              <div className="notif-panel__empty">Chưa có đơn nào</div>
+            ) : (
+              <div className="notif-panel__list">
+                {orders.map(order => (
+                  <div
+                    key={order._id}
+                    className={`notif-item${order.isRead ? '' : ' is-unread'}`}
+                    onClick={() => handleSelectOrder(order)}
+                  >
+                    <div className="notif-item__imgs">
+                      {order.items.slice(0, 3).map((item, i) => (
+                        <img
+                          key={i}
+                          src={imgUrl(item.image) || FALLBACK}
+                          alt={item.name}
+                          onError={e => { e.currentTarget.src = FALLBACK; }}
+                        />
+                      ))}
+                      {order.items.length > 3 && (
+                        <span className="notif-item__more">+{order.items.length - 3}</span>
+                      )}
+                    </div>
+                    <div className="notif-item__body">
+                      <p className="notif-item__title">
+                        {order.items.length} món: {order.items.slice(0, 2).map(i => i.name).join(', ')}
+                        {order.items.length > 2 ? '...' : ''}
+                      </p>
+                      <span className="notif-item__time">{timeAgo(order.createdAt)}</span>
+                    </div>
+                    {!order.isRead && <span className="notif-item__dot" />}
+                    <button className="notif-item__del" onClick={e => handleDelete(order._id, e)} aria-label="Xóa">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {selected && (
+        <OrderModal order={selected} onClose={() => setSelected(null)} />
       )}
-    </div>
+    </>
   );
 }
