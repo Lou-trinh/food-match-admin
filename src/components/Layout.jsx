@@ -27,7 +27,7 @@ export default function Layout({ children }) {
         </button>
         <span className="mobile-header-title">🍽 Food Match Admin</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <NotifBell />
+          <NotifBell placement="header" />
           <div className="sidebar-user-avatar mobile-avatar">
             {user?.username?.[0]?.toUpperCase()}
           </div>
@@ -65,7 +65,7 @@ export default function Layout({ children }) {
           <div className="sidebar-user">
             <span className="sidebar-user-avatar">{user?.username?.[0]?.toUpperCase()}</span>
             <span>{user?.username}</span>
-            <NotifBell />
+            <NotifBell placement="sidebar" />
           </div>
           <button className="sidebar-logout" onClick={handleLogout}>
             Đăng xuất

@@ -13,20 +13,19 @@ function timeAgo(dateStr) {
 
 const FALLBACK = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=60&q=60';
 
-export default function NotifBell() {
+// placement: "sidebar" | "header"
+export default function NotifBell({ placement = 'sidebar' }) {
   const [open, setOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [unread, setUnread] = useState(0);
-  const panelRef = useRef(null);
+  const wrapRef = useRef(null);
 
   async function fetchOrders() {
     try {
       const res = await ordersApi.getAll();
       setOrders(res.data);
       setUnread(res.data.filter(o => !o.isRead).length);
-    } catch {
-      // ignore if not logged in yet
-    }
+    } catch {}
   }
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function NotifBell() {
   useEffect(() => {
     if (!open) return;
     function handleClick(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -71,7 +70,7 @@ export default function NotifBell() {
   }
 
   return (
-    <div className="notif-bell" ref={panelRef}>
+    <div className={`notif-bell notif-bell--${placement}`} ref={wrapRef}>
       <button className="notif-bell__btn" onClick={handleOpen} aria-label="Thông báo">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -83,7 +82,7 @@ export default function NotifBell() {
       {open && (
         <div className="notif-panel">
           <div className="notif-panel__header">
-            <strong>Thông báo</strong>
+            <strong>Thông báo đơn hàng</strong>
             {unread > 0 && <span className="notif-panel__unread">{unread} chưa đọc</span>}
           </div>
 
